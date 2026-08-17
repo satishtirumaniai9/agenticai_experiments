@@ -20,7 +20,7 @@ def save_trip_demo(user_id: str, destination: str) -> str:
     """Save a trip to the database. Irreversible without manual cleanup."""
     return f"Trip to {destination} saved for {user_id}."  # standing in for a real DB write
 
-# agent = create_agent(model=model, tools=[save_trip_demo], middleware=[SummarizationMiddleware(model=model,trigger=('token',4000),keep=('messages', 10))])
+agent = create_agent(model=model, tools=[save_trip_demo], middleware=[SummarizationMiddleware(model=model,trigger=('token',4000),keep=('messages', 10))])
 
 def your_read_email_tool(email_id: str) -> str:
     """Mock function to read an email by its ID."""
@@ -442,3 +442,19 @@ agent = create_agent(
 result = agent.invoke({"messages": [("user", "Please send a email to my manager for leave tomorrow by mentioning the bad weather in Gurgaon")]})
 
 print(result)
+
+shell_agent = create_agent(model=model,tools=[], middleware=[ShellToolMiddleware(workspace_root=os.getcwd(), execution_policy=HostExecutionPolicy(command_timeout=120))])
+
+print("Agent created successfully!")
+
+# Task 1: Create reports folder
+print("\n[Task 1] Creating reports folder...")
+result1 = shell_agent.invoke({"messages": [("user", "Create a reports folder if the same does not exist in the current working directory.")]}, timeout=60)
+print("Reports folder task completed!")
+
+# Task 2: Research and save to file
+print("\n[Task 2] Researching Claude Code and saving to file...")
+result2 = shell_agent.invoke({"messages": [("user", "Do a research on Claude Code, save it in a file inside the reports folder.")]}, timeout=120)
+
+from rich import print as rich_print
+rich_print(result2['messages'][-1].content)
